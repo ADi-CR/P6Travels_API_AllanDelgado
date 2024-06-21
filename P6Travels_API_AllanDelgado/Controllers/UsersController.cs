@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using P6Travels_API_AllanDelgado.Models;
+using P6Travels_API_AllanDelgado.ModelsDTOs;
 
 namespace P6Travels_API_AllanDelgado.Controllers
 {
@@ -40,6 +41,67 @@ namespace P6Travels_API_AllanDelgado.Controllers
 
             return user;
         }
+
+        //esta version de get muestra la info de un usuario
+        //según su correo, y será usada para cargar la info del usuario
+        //justo despues de la validación del login en la app, 
+        //con esto crearemos un usuario global
+        [HttpGet("GetUserInfoByEmail")]
+        public ActionResult<IEnumerable<UsuarioDTO>> GetUserInfoByEmail(string pEmail)
+        {
+            //acá vamos imitar la misma consulta que hicimos en SSMS 
+            //pero usando Linq
+
+            var query = (from u in _context.Users
+                         join ur in _context.UserRoles
+                         on u.UserRoleId equals ur.UserRoleId
+                         where u.Email == pEmail
+                         select new
+                         {
+                             id = u.UserId,
+                             correo = u.Email,
+                             nombre = u.Name,
+                             telefono = u.PhoneNumber,
+                             contrasennia = u.LoginPassword,
+                             rolid = u.UserRoleId,
+                             descriprol = ur.UserRoleDescription
+                         }
+                         ).ToList();
+                        //los nombres que están dentro del selec new{}
+                        //se usarán de forma temporal para la captura de los
+                        //datos que luego se pasarán al DTO de respuesta de
+                        //la función 
+
+            //ahora que tenemos la info necesaria, vamos a crear
+            //un objeto en lista del tipo DTO de respuesta, 
+            //para llenar con los datos de la consulta 
+
+            List<UsuarioDTO> list = new List<UsuarioDTO>();
+
+            //como query puede tener varios resultados entonces hacemos 
+            //un recorrido por cada unos de ellos con un foreach 
+
+            foreach (var item in query)
+            {
+                UsuarioDTO nuevoUsuario = new UsuarioDTO()
+                {
+                    UsuarioID = item.id,
+                    Correo = item.correo,
+                    Nombre = item.nombre,
+                    Telefono = item.telefono,
+                    Contrasennia=item.contrasennia,
+                    RolID = item.rolid, 
+                    RolDescripcion = item.descriprol
+                };
+
+                list.Add(nuevoUsuario);
+            }
+
+            if (list == null) {return NotFound();}
+
+            return list;
+        }
+
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
