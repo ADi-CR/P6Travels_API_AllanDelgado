@@ -21,13 +21,13 @@
     {
         public int UsuarioID { get; set; }
 
-        public string? Correo { get; set; }
+        public string Correo { get; set; } = null!;
 
-        public string? Nombre { get; set; }
+        public string Nombre { get; set; } = null!;
 
         public string?  Telefono { get; set; }
 
-        public string? Contrasennia { get; set; }
+        public string Contrasennia { get; set; } = null!;
 
         public int RolID { get; set; }
 
